@@ -21,31 +21,60 @@ async function getHolidayName() {
   return await prompt.run();
 }
 
-async function getHolidayPeriod() {
+async function getFirstDay() {
   const { prompt } = enquirer;
 
+  console.log('開始日について教えてください。')
   const response = await prompt([
     {
       type: "input",
       name: "year",
-      message: "それは何年？(開始日)",
+      message: "何年？",
       initial: 2023,
     },
     {
       type: "input",
-      name: "firstDay",
-      message: "休みの初日は何日？",
+      name: "month",
+      message: "何月？",
       initial: 1,
     },
     {
       type: "input",
-      name: "lastDay",
-      message: "休みの最終日は何日？",
+      name: "day",
+      message: "何日？",
       initial: 1,
     },
   ]);
 
-  return response;
+  return new Date(response.year, response.month - 1, response.day);
+}
+
+async function getLastDay() {
+  const { prompt } = enquirer;
+
+  console.log('終了日について教えてください。')
+  const response = await prompt([
+    {
+      type: "input",
+      name: "year",
+      message: "何年？",
+      initial: 2023,
+    },
+    {
+      type: "input",
+      name: "month",
+      message: "何月？",
+      initial: 1,
+    },
+    {
+      type: "input",
+      name: "day",
+      message: "何日？",
+      initial: 1,
+    },
+  ]);
+
+  return new Date(response.year, response.month - 1, response.day);
 }
 
 async function calculateLength(firstDay, lastDay) {
@@ -57,20 +86,18 @@ async function run() {
 
   if ( holidayName == '年末年始' ) {
     console.log('年末年始が何連休になるか計算します！');
-    const holidayPeriod = await getHolidayPeriod();
-    const firstDay = new Date(holidayPeriod.year, 11, holidayPeriod.firstDay);
-    const lastDay = new Date(Number(holidayPeriod.year) + 1, 0, holidayPeriod.lastDay);
+    const firstDay = await getFirstDay();
+    const lastDay = await getLastDay();
     const period = await calculateLength(firstDay, lastDay);
     
-    console.log(`${holidayPeriod.year}年の年末年始は${period}連休です！`);
+    console.log(`${firstDay.getFullYear()}年の年末年始は${period}連休です！`);
   } else if (holidayName == 'お盆') {
     console.log('お盆が何連休になるか計算します！');
-    const holidayPeriod = await getHolidayPeriod();
-    const firstDay = new Date(holidayPeriod.year, 7, holidayPeriod.firstDay);
-    const lastDay = new Date(holidayPeriod.year, 7, holidayPeriod.lastDay);
+    const firstDay = await getFirstDay();
+    const lastDay = await getLastDay();
     const period = await calculateLength(firstDay, lastDay);
     
-    console.log(`${holidayPeriod.year}年のお盆休みは${period}連休です！`);
+    console.log(`${firstDay.getFullYear()}年のお盆休みは${period}連休です！`);
   }
 }
 
