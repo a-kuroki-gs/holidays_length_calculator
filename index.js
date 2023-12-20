@@ -1,6 +1,7 @@
 #! /usr/bin/env node
 
 import enquirer from "enquirer";
+import holiday from '@holiday-jp/holiday_jp';
 
 async function getHolidayName() {
   console.log('*************************');
@@ -110,25 +111,50 @@ async function calculateWeekendInclusiveSpan(firstDay, lastDay) {
   return [firstDay, lastDay];
 }
 
-async function calculatePublicHolidayInclusiveSpan(firstDay, lastDay, publicHoliday, weekendOff) {
+async function calculatePublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff) {
   // 祝日休み
-  // 初日-1の日が祝日
-  if (publicHoliday.includes(firstDay.toISOString().slice(0, 10))){
+  // 祝日を取得
+  const checkStartDay = new Date(firstDay);
+  checkStartDay.setDate(firstDay.getDate() - 14);
+  const checkEndDay = new Date(lastDay);
+  checkEndDay.setDate(lastDay.getDate() + 14);
+  const holidays = holiday.between(checkStartDay, checkEndDay);
+
+  // 初日-1の日が祝日かどうかをチェック
+  let beforeFirstDay = new Date(firstDay);
+  beforeFirstDay.setDate(firstDay.getDate() - 1);
+  if (checkPublicHoliday(beforeFirstDay, holidays)){
     // １日前にする
-    firstDay.setDate(firstDay.getDate() - 1);
+    firstDay = new Date(beforeFirstDay);
   }
   // 最終日+1の日が祝日
-  if (publicHoliday.includes(lastDay.toISOString().slice(0, 10))){
+  let afterLastDay = new Date(lastDay);
+  afterLastDay.setDate(lastDay.getDate() + 1);
+  if (checkPublicHoliday(afterLastDay, holidays)){
     // １日後にする
-    lastDay.setDate(lastDay.getDate() + 1);
+    lastDay = new Date(afterLastDay);
+  }
+  // 延ばした日の曜日を考慮する
+  if (weekendOff) {
+    [firstDay, lastDay] = await calculateWeekendInclusiveSpan(firstDay, lastDay);
   }
 
-  // 延ばした日の曜日を考慮する
-  if (weekendOff == true) {
-    calculateWeekendInclusiveSpan(firstDay, lastDay);
+  beforeFirstDay.setDate(firstDay.getDate() - 1);
+  afterLastDay.setDate(lastDay.getDate() + 1);
+
+  if (checkPublicHoliday(beforeFirstDay, holidays) == true || checkPublicHoliday(afterLastDay, holidays) == true) {
+    [firstDay, lastDay] = await calculatePublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff);
   }
 
   return [firstDay, lastDay];
+}
+
+function checkPublicHoliday(day, holidays) {
+  const checkDay = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()));
+  const result = holidays.some(h => {
+    return h.date.getTime() === checkDay.getTime();
+  });
+  return result;
 }
 
 async function isWeekendOff() {
@@ -176,7 +202,6 @@ async function isPublicHolidayOff() {
 async function run() {
   const holidayName = await getHolidayName();
   const weekendOff = await isWeekendOff();
-  const publicHoliday = ['2023-12-25', '2024-01-01', '2024-01-08'];
   const publicHolidayOff = await isPublicHolidayOff();
 
   if ( holidayName == '年末年始' ) {
@@ -184,19 +209,13 @@ async function run() {
     let firstDay = await getFirstDay();
     let lastDay = await getLastDay();
 
-    if (weekendOff == true && publicHolidayOff == true) {
+    if (publicHolidayOff) {
+      [firstDay, lastDay] = await calculatePublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff);
+    } else if(weekendOff) {
       [firstDay, lastDay] = await calculateWeekendInclusiveSpan(firstDay, lastDay);
-      while (publicHoliday.includes(firstDay.toISOString().slice(0, 10)) || publicHoliday.includes(lastDay.toISOString().slice(0, 10))) {
-        [firstDay, lastDay] = await calculatePublicHolidayInclusiveSpan(firstDay, lastDay, publicHoliday, weekendOff);
-      }
-    } else if (weekendOff == true) {
-      [firstDay, lastDay] = await calculateWeekendInclusiveSpan(firstDay, lastDay);
-    } else if (publicHolidayOff == true) {
-      [firstDay, lastDay] = await calculatePublicHolidayInclusiveSpan(firstDay, lastDay, publicHoliday, weekendOff);
     }
 
     const period = await calculateLength(firstDay, lastDay);
-    
     console.log(`${firstDay.getFullYear()}年の年末年始は${period}連休です！`);
   } else if (holidayName == 'お盆') {
     console.log('お盆が何連休になるか計算します！');
