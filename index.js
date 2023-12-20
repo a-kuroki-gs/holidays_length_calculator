@@ -22,10 +22,9 @@ async function getHolidayName() {
   return await prompt.run();
 }
 
-async function getFirstDay() {
+async function receiveDate() {
   const { prompt } = enquirer;
 
-  console.log('開始日について教えてください。')
   const response = await prompt([
     {
       type: "input",
@@ -47,35 +46,7 @@ async function getFirstDay() {
     },
   ]);
 
-  return new Date(response.year, response.month - 1, response.day);
-}
-
-async function getLastDay() {
-  const { prompt } = enquirer;
-
-  console.log('終了日について教えてください。')
-  const response = await prompt([
-    {
-      type: "input",
-      name: "year",
-      message: "何年？",
-      initial: 2023,
-    },
-    {
-      type: "input",
-      name: "month",
-      message: "何月？",
-      initial: 1,
-    },
-    {
-      type: "input",
-      name: "day",
-      message: "何日？",
-      initial: 1,
-    },
-  ]);
-
-  return new Date(response.year, response.month - 1, response.day);
+  return new Date(Date.UTC(response.year, response.month - 1, response.day));
 }
 
 async function calculateLength(firstDay, lastDay) {
@@ -150,14 +121,14 @@ async function calculatePublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff
 }
 
 function checkPublicHoliday(day, holidays) {
-  const checkDay = new Date(Date.UTC(day.getFullYear(), day.getMonth(), day.getDate()));
+  const checkDay = new Date(day);
   const result = holidays.some(h => {
     return h.date.getTime() === checkDay.getTime();
   });
   return result;
 }
 
-async function isWeekendOff() {
+async function isOff(holiday) {
   const { Select } = enquirer;
   const choices = [
                     { name: 'はい', value: true },
@@ -168,28 +139,7 @@ async function isWeekendOff() {
     name: "selections",
     type: "select",
     multiple: false,
-    message: `土日は休みですか？`,
-    choices: choices,
-    result() {
-      return this.focused.value;
-    }
-  });
-
-  return await prompt.run();
-}
-
-async function isPublicHolidayOff() {
-  const { Select } = enquirer;
-  const choices = [
-                    { name: 'はい', value: true },
-                    { name: 'いいえ', value: false }
-                  ]
-
-  const prompt = new Select({
-    name: "selections",
-    type: "select",
-    multiple: false,
-    message: `祝日は休みですか？`,
+    message: `${holiday}は休みですか？`,
     choices: choices,
     result() {
       return this.focused.value;
@@ -201,30 +151,22 @@ async function isPublicHolidayOff() {
 
 async function run() {
   const holidayName = await getHolidayName();
-  const weekendOff = await isWeekendOff();
-  const publicHolidayOff = await isPublicHolidayOff();
+  const weekendOff = await isOff('土日');
+  const publicHolidayOff = await isOff('祝日');
 
-  if ( holidayName == '年末年始' ) {
-    console.log('年末年始が何連休になるか計算します！');
-    let firstDay = await getFirstDay();
-    let lastDay = await getLastDay();
+  console.log(`${holidayName}が何連休になるか計算します！`);
+  console.log('開始日について教えてください。')
+  let firstDate = await receiveDate();
+  console.log('最終日について教えてください。')
+  let lastDate = await receiveDate();
 
-    if (publicHolidayOff) {
-      [firstDay, lastDay] = await calculatePublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff);
-    } else if(weekendOff) {
-      [firstDay, lastDay] = await calculateWeekendInclusiveSpan(firstDay, lastDay);
-    }
-
-    const period = await calculateLength(firstDay, lastDay);
-    console.log(`${firstDay.getFullYear()}年の年末年始は${period}連休です！`);
-  } else if (holidayName == 'お盆') {
-    console.log('お盆が何連休になるか計算します！');
-    const firstDay = await getFirstDay();
-    const lastDay = await getLastDay();
-    const period = await calculateLength(firstDay, lastDay);
-    
-    console.log(`${firstDay.getFullYear()}年のお盆休みは${period}連休です！`);
+  if (publicHolidayOff) {
+    [firstDate, lastDate] = await calculatePublicHolidayInclusiveSpan(firstDate, lastDate, weekendOff);
+  } else if(weekendOff) {
+    [firstDate, lastDate] = await calculateWeekendInclusiveSpan(firstDate, lastDate);
   }
+  const period = await calculateLength(firstDate, lastDate);
+  console.log(`${firstDate.getFullYear()}年の${holidayName}は${period}連休です！`);
 }
 
 run();
