@@ -2,6 +2,7 @@
 
 import enquirer from "enquirer";
 import holiday from '@holiday-jp/holiday_jp';
+import readline from 'readline';
 
 async function getHolidayName() {
   console.log('*************************');
@@ -9,7 +10,7 @@ async function getHolidayName() {
   console.log('*************************');
 
   const { Select } = enquirer;
-  const choices = ['年末年始', 'お盆'];
+  const choices = ['年末年始', 'お盆', 'その他'];
 
   const prompt = new Select({
     name: "selections",
@@ -19,7 +20,22 @@ async function getHolidayName() {
     choices: choices,
   });
 
-  return await prompt.run();
+  let result = await prompt.run();
+  if (result == 'その他') {
+    const rl = readline.createInterface({
+      input: process.stdin,
+      output: process.stdout,
+    });
+
+    return new Promise(resolve => {
+      rl.question('何の休みですか？', answer => {
+        rl.close();
+        resolve(answer);
+      });
+    });
+  }
+
+  return result;
 }
 
 async function receiveDate() {
