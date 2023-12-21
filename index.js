@@ -5,9 +5,9 @@ import holiday from "@holiday-jp/holiday_jp";
 import readline from "readline";
 
 async function receiveHolidayName() {
-  console.log("*************************");
-  console.log("* あなたの休みは何連休？*");
-  console.log("*************************");
+  console.log("**************************");
+  console.log("* あなたの休みは何連休？ *");
+  console.log("**************************");
 
   const { Select } = enquirer;
   const choices = ["年末年始", "お盆", "その他"];
