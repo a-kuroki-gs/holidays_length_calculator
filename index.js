@@ -69,7 +69,7 @@ async function calculateLength(firstDay, lastDay) {
   return (lastDay - firstDay) / 86400000 + 1;
 }
 
-async function adjustWeekendInclusiveSpan(firstDay, lastDay) {
+async function adjustWeekendInclusiveLength(firstDay, lastDay) {
   switch (firstDay.getDay()) {
     // 月曜
     case 1:
@@ -99,7 +99,7 @@ async function adjustWeekendInclusiveSpan(firstDay, lastDay) {
   return [firstDay, lastDay];
 }
 
-async function adjustPublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff) {
+async function adjustPublicHolidayInclusiveLength(firstDay, lastDay, weekendOff) {
   const checkStartDay = new Date(firstDay);
   checkStartDay.setDate(firstDay.getDate() - 14);
   const checkEndDay = new Date(lastDay);
@@ -121,7 +121,7 @@ async function adjustPublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff) {
   }
   // 延ばした日の曜日を考慮する
   if (weekendOff) {
-    [firstDay, lastDay] = await adjustWeekendInclusiveSpan(firstDay, lastDay);
+    [firstDay, lastDay] = await adjustWeekendInclusiveLength(firstDay, lastDay);
   }
 
   beforeFirstDay.setDate(firstDay.getDate() - 1);
@@ -131,7 +131,7 @@ async function adjustPublicHolidayInclusiveSpan(firstDay, lastDay, weekendOff) {
     isPublicHoliday(beforeFirstDay, holidays) ||
     isPublicHoliday(afterLastDay, holidays)
   ) {
-    [firstDay, lastDay] = await adjustPublicHolidayInclusiveSpan(
+    [firstDay, lastDay] = await adjustPublicHolidayInclusiveLength(
       firstDay,
       lastDay,
       weekendOff,
@@ -182,20 +182,20 @@ async function run() {
   let lastDate = await receiveDate();
 
   if (publicHolidayOff) {
-    [firstDate, lastDate] = await adjustPublicHolidayInclusiveSpan(
+    [firstDate, lastDate] = await adjustPublicHolidayInclusiveLength(
       firstDate,
       lastDate,
       weekendOff,
     );
   } else if (weekendOff) {
-    [firstDate, lastDate] = await adjustWeekendInclusiveSpan(
+    [firstDate, lastDate] = await adjustWeekendInclusiveLength(
       firstDate,
       lastDate,
     );
   }
-  const period = await calculateLength(firstDate, lastDate);
+  const length = await calculateLength(firstDate, lastDate);
   console.log(
-    `${firstDate.getFullYear()}年の${holidayName}は${period}連休です！`,
+    `${firstDate.getFullYear()}年の${holidayName}は${length}連休です！`,
   );
 }
 
