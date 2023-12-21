@@ -1,12 +1,25 @@
 {
-  "name": "holiday_span_calculator",
+  "name": "holiday_length_calculator",
   "version": "1.0.0",
+  "description": "Calculate the duration of consecutive holidays.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "lint": "prettier --check . && eslint .",
+    "fix": "prettier --write . && eslint --fix ."
   },
-  "keywords": [],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/a-kuroki-gs/holiday_length_calculator"
+  },
+  "bugs": {
+    "url": "https://github.com/a-kuroki-gs/holiday_length_calculator/issues"
+  },
+  "homepage": "https://github.com/a-kuroki-gs/holiday_length_calculator#readme",
+  "keywords": [
+    "holiday",
+    "calculator"
+  ],
   "author": "a-kuroki-gs",
-  "license": "ISC",
-  "description": ""
+  "license": "MIT",
+  "type": "module"
 }
