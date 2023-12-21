@@ -7,7 +7,7 @@
 以下のコマンドを実行してください。
 
 ```
-npm install @a-kuroki-gs/holiday_length_calculator
+npm install holiday_length_calculator
 ```
 
 ## 使い方
