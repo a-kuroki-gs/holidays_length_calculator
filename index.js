@@ -99,7 +99,11 @@ async function adjustWeekendInclusiveLength(firstDay, lastDay) {
   return [firstDay, lastDay];
 }
 
-async function adjustPublicHolidayInclusiveLength(firstDay, lastDay, weekendOff) {
+async function adjustPublicHolidayInclusiveLength(
+  firstDay,
+  lastDay,
+  weekendOff,
+) {
   const checkStartDay = new Date(firstDay);
   checkStartDay.setDate(firstDay.getDate() - 14);
   const checkEndDay = new Date(lastDay);
