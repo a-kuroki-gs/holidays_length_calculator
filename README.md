@@ -1,4 +1,4 @@
-# holiday_length_calculator
+# holidays_length_calculator
 
 休日や祝日の休みを考慮して、連続休暇の日数を計算します。
 
@@ -7,7 +7,7 @@
 以下のコマンドを実行してください。
 
 ```
-npm install holiday_length_calculator
+npm install holidays_length_calculator
 ```
 
 ## 使い方
@@ -15,7 +15,7 @@ npm install holiday_length_calculator
 以下のコマンドを実行すると、連休計算アプリが起動します。
 
 ```
-holiday_length_calculator
+holidays_length_calculator
 ```
 
 まず、休みの名前を選択します。
