@@ -15,7 +15,7 @@ npm install holidays_length_calculator
 以下のコマンドを実行すると、連休計算アプリが起動します。
 
 ```
-holidays_length_calculator
+npx holidays_length_calculator
 ```
 
 まず、休みの名前を選択します。
