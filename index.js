@@ -4,6 +4,35 @@ import enquirer from "enquirer";
 import holiday from "@holiday-jp/holiday_jp";
 import readline from "readline";
 
+async function run() {
+  const holidayName = await receiveHolidayName();
+  const weekendOff = await isDayOff("土日");
+  const publicHolidayOff = await isDayOff("祝日");
+
+  console.log(`${holidayName}が何連休になるか計算します！`);
+  console.log("開始日について教えてください。");
+  let firstDate = await receiveDate();
+  console.log("最終日について教えてください。");
+  let lastDate = await receiveDate();
+
+  if (publicHolidayOff) {
+    [firstDate, lastDate] = await adjustPublicHolidayInclusiveLength(
+      firstDate,
+      lastDate,
+      weekendOff,
+    );
+  } else if (weekendOff) {
+    [firstDate, lastDate] = await adjustWeekendInclusiveLength(
+      firstDate,
+      lastDate,
+    );
+  }
+  const length = await calculateLength(firstDate, lastDate);
+  console.log(
+    `${firstDate.getFullYear()}年の${holidayName}は${length}連休です！`,
+  );
+}
+
 async function receiveHolidayName() {
   console.log("**************************");
   console.log("* あなたの休みは何連休？ *");
@@ -172,35 +201,6 @@ async function isDayOff(holiday) {
   });
 
   return await prompt.run();
-}
-
-async function run() {
-  const holidayName = await receiveHolidayName();
-  const weekendOff = await isDayOff("土日");
-  const publicHolidayOff = await isDayOff("祝日");
-
-  console.log(`${holidayName}が何連休になるか計算します！`);
-  console.log("開始日について教えてください。");
-  let firstDate = await receiveDate();
-  console.log("最終日について教えてください。");
-  let lastDate = await receiveDate();
-
-  if (publicHolidayOff) {
-    [firstDate, lastDate] = await adjustPublicHolidayInclusiveLength(
-      firstDate,
-      lastDate,
-      weekendOff,
-    );
-  } else if (weekendOff) {
-    [firstDate, lastDate] = await adjustWeekendInclusiveLength(
-      firstDate,
-      lastDate,
-    );
-  }
-  const length = await calculateLength(firstDate, lastDate);
-  console.log(
-    `${firstDate.getFullYear()}年の${holidayName}は${length}連休です！`,
-  );
 }
 
 run();
