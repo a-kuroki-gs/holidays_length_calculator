@@ -1,6 +1,6 @@
 {
   "name": "holidays_length_calculator",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Calculate the duration of consecutive holidays.",
   "main": "index.js",
   "scripts": {
